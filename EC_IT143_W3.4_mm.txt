@@ -1,0 +1,64 @@
+-- =============================================
+-- Script: AdventureWorks Business User Queries
+-- Author: Martin Michael
+-- Date: 22-March-2025
+-- Purpose: Answer business user questions using SQL queries
+-- =============================================
+
+-- 1. (Author: Martin Michael) How many total products does AdventureWorks sell?
+SELECT COUNT(*) AS TotalProducts
+FROM Production.Product;
+
+-- 2. (Author: Martin Michael) What is the total revenue from the sales of bicycles for the past quarter?
+SELECT SUM(LineTotal) AS TotalRevenue
+FROM Sales.SalesOrderDetail AS sod
+JOIN Sales.SalesOrderHeader AS soh ON sod.SalesOrderID = soh.SalesOrderID
+JOIN Production.Product AS p ON sod.ProductID = p.ProductID
+WHERE p.ProductSubcategoryID IN (
+    SELECT ProductSubcategoryID 
+    FROM Production.ProductSubcategory 
+    WHERE ProductCategoryID = (
+        SELECT ProductCategoryID 
+        FROM Production.ProductCategory 
+        WHERE Name = 'Bikes'))
+AND soh.OrderDate >= DATEADD(QUARTER, -1, GETDATE());
+
+-- 3. (Author: Francisco Meireles da Silva) Which salespersons exceeded $100,000 in total sales? Show their names and total amount sold.
+SELECT sp.BusinessEntityID, p.FirstName, p.LastName, SUM(soh.TotalDue) AS TotalSales
+FROM Sales.SalesPerson AS sp
+JOIN Sales.SalesOrderHeader AS soh ON sp.BusinessEntityID = soh.SalesPersonID
+JOIN Person.Person AS p ON sp.BusinessEntityID = p.BusinessEntityID
+GROUP BY sp.BusinessEntityID, p.FirstName, p.LastName
+HAVING SUM(soh.TotalDue) > 100000;
+
+-- 4. (Author: Francisco Meireles da Silva) Which products with a list price over $2,000 belong to which categories? Show product name, category, and price.
+SELECT p.Name AS ProductName, pc.Name AS Category, p.ListPrice
+FROM Production.Product AS p
+JOIN Production.ProductSubcategory AS psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+JOIN Production.ProductCategory AS pc ON psc.ProductCategoryID = pc.ProductCategoryID
+WHERE p.ListPrice > 2000;
+
+-- 5. (Author: Osazuwa Owie) Which employee has the longest tenure in the database?
+SELECT TOP 1 e.BusinessEntityID, p.FirstName, p.LastName, e.HireDate
+FROM HumanResources.Employee AS e
+JOIN Person.Person AS p ON e.BusinessEntityID = p.BusinessEntityID
+ORDER BY e.HireDate ASC;
+
+-- 6. (Author: Osazuwa Owie) Which product has the highest sales revenue?
+SELECT TOP 1 p.Name AS ProductName, SUM(sod.LineTotal) AS TotalRevenue
+FROM Sales.SalesOrderDetail AS sod
+JOIN Production.Product AS p ON sod.ProductID = p.ProductID
+GROUP BY p.Name
+ORDER BY TotalRevenue DESC;
+
+-- 7. (Author: David Kargbo) Can you create a list of all tables containing a column named "OrderDate"?
+SELECT TABLE_NAME, COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE COLUMN_NAME = 'OrderDate';
+
+-- 8. (Author: David Kargbo) Which columns in the Sales.SalesOrderHeader table are indexed?
+SELECT i.name AS IndexName, c.name AS ColumnName
+FROM sys.index_columns AS ic
+JOIN sys.columns AS c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+JOIN sys.indexes AS i ON ic.object_id = i.object_id AND ic.index_id = i.index_id
+WHERE ic.object_id = OBJECT_ID('Sales.SalesOrderHeader');
