@@ -1,0 +1,17 @@
+
+-- Create the UserDetailsTable_FromView table
+CREATE TABLE UserDetailsTable_FromView (
+    UserID INT PRIMARY KEY,
+    FirstName NVARCHAR(50),
+    LastName NVARCHAR(50),
+    CreatedDate DATETIME
+);
+
+-- Insert data from the view into the new table
+INSERT INTO UserDetailsTable_FromView (UserID, FirstName, LastName, CreatedDate)
+SELECT UserID, FirstName, LastName, CreatedDate
+FROM vw_UserDetails;
+
+-- Verify the data in the new table
+SELECT * FROM UserDetailsTable_FromView;
+

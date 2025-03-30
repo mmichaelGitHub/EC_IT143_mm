@@ -1,0 +1,24 @@
+
+-- Drop the table if it already exists
+IF OBJECT_ID('UserDetailsTable_FromView', 'U') IS NOT NULL
+    DROP TABLE UserDetailsTable_FromView;
+
+-- Create the refined UserDetailsTable_FromView
+CREATE TABLE UserDetailsTable_FromView (
+    UserID INT PRIMARY KEY,               -- Primary key for unique identification
+    FirstName NVARCHAR(50) NOT NULL,      -- Ensure first name is not null
+    LastName NVARCHAR(50) NOT NULL,       -- Ensure last name is not null
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),  -- Set default value to current date
+    CONSTRAINT CK_UserCreatedDate CHECK (CreatedDate <= GETDATE())  -- Ensure CreatedDate is not in the future
+);
+
+-- Create an index on the FirstName and LastName for faster lookups (if necessary)
+CREATE INDEX idx_FirstName_LastName ON UserDetailsTable_FromView (FirstName, LastName);
+
+-- Insert data from the view into the new table
+INSERT INTO UserDetailsTable_FromView (UserID, FirstName, LastName, CreatedDate)
+SELECT UserID, FirstName, LastName, CreatedDate
+FROM vw_UserDetails;
+
+-- Verify the data in the new table
+SELECT * FROM UserDetailsTable_FromView;

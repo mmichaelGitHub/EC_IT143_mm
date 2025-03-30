@@ -1,0 +1,4 @@
+
+-- Execute the stored procedure to load data from the view into the table
+
+EXEC LoadDataFromViewToTable;

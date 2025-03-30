@@ -1,0 +1,4 @@
+-- What is the simplest question? 
+
+-- Example: "What is the current date and time?"
+
